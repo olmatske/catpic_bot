@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"strings"
 	"context"
 	"log"
@@ -60,18 +61,25 @@ func handler(ctx context.Context, b *bot.Bot, update *models.Update) {
 			})
 			return
 		} else if strings.EqualFold(answer, "yes") {
-			b.SendMessage(ctx, &bot.SendMessageParams{
+			fileContent, err := os.ReadFile("cat.png")
+			if err != nil {
+				return
+			}
+			params := &bot.SendPhotoParams {
 				ChatID: chatID,
-				Text: "Yippie!!",
-			})
+				Photo: &models.InputFileUpload{Filename: "cat.png", Data: bytes.NewReader(fileContent)},
+				Caption: "That's my cat 😎",
+			}
+			b.SendPhoto(ctx, params)
+			if _, err := b.SendPhoto(ctx, params); err != nil {
+				log.Printf("SendPhoto error: %v", err)
+			}
 		} else if strings.EqualFold(answer, "no") {
 			b.SendMessage(ctx, &bot.SendMessageParams{
 				ChatID: chatID,
 				Text: "Oh, okay :(",
 			})
 		}
-
-
 
 		userState[chatID] = ""
 	}
