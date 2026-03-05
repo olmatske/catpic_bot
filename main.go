@@ -47,6 +47,17 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+
+	_, err = b.SetMyCommands(ctx, &bot.SetMyCommandsParams{
+		Commands: []models.BotCommand{
+			// {Command: "start", Description: "Start the bot"},
+			{Command: "cat", Description: "Recieve a cat picture"},
+		},
+	})
+	if err != nil {
+		log.Fatalf("SetMyCommands error: %v", err)
+	}
+
 	b.Start(ctx)
 }
 
@@ -105,11 +116,35 @@ func handler(ctx context.Context, b *bot.Bot, update *models.Update) {
 			})
 		}
 
+		b.RegisterHandler(bot.HandlerTypeMessageText, "cat", bot.MatchTypeCommand, catHandler)
 		userState[chatID] = ""
 	}
 
 }
 
+
+func catHandler(ctx context.Context, b *bot.Bot, update *models.Update) {
+	chatID := update.Message.Chat.ID
+
+	url, err := getCatURL()
+	if err != nil {
+		log.Printf("cat api error: %v", err)
+		b.SendMessage(ctx, &bot.SendMessageParams{
+			ChatID: chatID,
+			Text:   "Could not fetch a cat right now.",
+		})
+		return
+	}
+
+	params := &bot.SendPhotoParams{
+		ChatID: chatID,
+		Photo: &models.InputFileString{Data: url},
+		Caption: "Here's your cat 😎",
+	}
+	if _, err := b.SendPhoto(ctx, params); err != nil {
+		log.Printf("SendPhoto error: %v", err)
+	}
+}
 
 
 
