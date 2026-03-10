@@ -14,7 +14,6 @@ import (
 
 	"github.com/go-telegram/bot"
 	"github.com/go-telegram/bot/models"
-	"github.com/joho/godotenv"
 )
 var (
 	userState = make(map[int64]string)
@@ -26,11 +25,6 @@ type catImage struct {
 }
 
 func main() {
-	err := godotenv.Load()
-	if err != nil {
-		log.Println("Error loading .env file")
-	}
-
 	token:= os.Getenv("TOKEN")
 	catAPIkey:= os.Getenv("CAT")
 	if token == "" || catAPIkey == "" {
@@ -69,6 +63,8 @@ func handler(ctx context.Context, b *bot.Bot, update *models.Update) {
 	}
 	chatID:= update.Message.Chat.ID
 	text:=   update.Message.Text
+
+	b.RegisterHandler(bot.HandlerTypeMessageText, "cat", bot.MatchTypeCommand, catHandler)
 
 	switch userState[chatID] {
 	case "":
@@ -116,7 +112,6 @@ func handler(ctx context.Context, b *bot.Bot, update *models.Update) {
 			})
 		}
 
-		b.RegisterHandler(bot.HandlerTypeMessageText, "cat", bot.MatchTypeCommand, catHandler)
 		userState[chatID] = ""
 	}
 

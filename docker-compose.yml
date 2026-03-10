@@ -1,0 +1,12 @@
+services:
+  telegram-bot:
+    build: .
+    restart: unless-stopped
+    environment:
+      - CAT=${CAT}
+      - TOKEN=${TOKEN}
+    deploy:
+      resources:
+        limits:
+          memory: 128M
+
